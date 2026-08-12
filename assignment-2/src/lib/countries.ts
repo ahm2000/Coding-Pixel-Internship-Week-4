@@ -23,13 +23,24 @@ export interface Country {
 // matching the real (if usually faster) latency of a live external API call.
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
+// countries.dev serves a thumb URL for Afghanistan that Wikimedia rejects
+// (hotlink protection on that specific derivative); swap in the direct
+// source file, which Wikimedia does serve.
+const FLAG_OVERRIDES: Record<string, string> = {
+  AFG: 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_the_Taliban.svg',
+};
+
 export const fetchCountries = async (): Promise<Country[]> => {
   await sleep(700);
   const res = await fetch(API_URL, { cache: 'no-store' });
   if (!res.ok) {
     throw new Error(`countries.dev responded with ${res.status}`);
   }
-  return res.json();
+  const countries: Country[] = await res.json();
+  return countries.map((country) => {
+    const override = FLAG_OVERRIDES[country.alpha3Code];
+    return override ? { ...country, flags: { ...country.flags, png: override } } : country;
+  });
 };
 
 export const getByCode = (countries: Country[], code: string): Country | null => {

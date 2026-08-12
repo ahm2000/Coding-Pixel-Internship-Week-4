@@ -206,9 +206,10 @@ Next.js 16 auto-generates these on every `next dev` (a built-in
 via `agentRules: false` in `next.config.ts` so they don't show up in the
 repo.
 
-## Known limitation
+## A note on Afghanistan's flag
 
-One flag image (Afghanistan) is served from `upload.wikimedia.org`, which
-blocks hot-linked requests without a browser-like referer; it renders as a
-broken image in the grid. All other 249 flags (served from `flagcdn.com`)
-load normally. Not a code bug - a data-source quirk in the upstream API.
+`countries.dev` serves a thumbnail URL for Afghanistan's flag that Wikimedia
+rejects (hotlink protection on that specific derivative), while every other
+flag comes from `flagcdn.com` and loads fine. `FLAG_OVERRIDES` in
+`src/lib/countries.ts` swaps in Wikimedia's direct source file for that one
+`alpha3Code`, which Wikimedia does serve.
