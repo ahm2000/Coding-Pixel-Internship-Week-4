@@ -21,7 +21,7 @@ page.on('request', (req) => {
 });
 
 await page.goto(baseUrl, { waitUntil: 'networkidle' });
-check('home page loads', await page.locator('text=Routing Drills').isVisible());
+check('home page loads', await page.locator('h1', { hasText: 'Routing' }).isVisible());
 
 const search = page.locator('input[placeholder="stays put across navigation"]');
 await search.fill('hello world');
@@ -43,13 +43,17 @@ check('header input value survived the navigation (header never remounted)', (aw
 
 const dashboardClass = await headerNav.locator('a', { hasText: 'Dashboard' }).getAttribute('class');
 const homeClass = await headerNav.locator('a', { hasText: 'Home' }).getAttribute('class');
-check('active link is highlighted', dashboardClass.includes('bg-blue-600'));
-check('inactive link is not highlighted', !homeClass.includes('bg-blue-600'));
+check('active link is highlighted', dashboardClass.includes('bg-indigo-600'));
+check('inactive link is not highlighted', !homeClass.includes('bg-indigo-600'));
 
 await page.locator('main a', { hasText: 'Settings' }).click();
 await page.waitForSelector('h1:has-text("Settings")');
-const crumbsText = await page.locator('main nav').innerText();
-check('breadcrumbs show the full trail', crumbsText.replace(/\s+/g, ' ').includes('Home / Dashboard / Settings'));
+const crumbsText = (await page.locator('main nav').innerText()).replace(/\s+/g, ' ');
+const crumbsOrdered = ['Home', 'Dashboard', 'Settings'].every((label, i, arr) => {
+  if (i === 0) return crumbsText.includes(label);
+  return crumbsText.indexOf(arr[i - 1]) < crumbsText.indexOf(label);
+});
+check('breadcrumbs show the full trail in order', crumbsOrdered);
 
 await page.goBack();
 await page.waitForSelector('h1:has-text("Dashboard")');
