@@ -21,6 +21,11 @@ export default function EnvBoundaryDemo() {
   const [values, setValues] = useState<{ siteName?: string; apiBaseUrl?: string } | null>(null);
 
   useEffect(() => {
+    // Deliberate exception to react-hooks/set-state-in-effect: this value
+    // can only be read correctly post-hydration (see the comment above), so
+    // there's no way to derive it during render without reintroducing the
+    // exact mismatch this effect exists to avoid.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValues({
       siteName: process.env.NEXT_PUBLIC_SITE_NAME,
       apiBaseUrl: process.env.API_BASE_URL,
